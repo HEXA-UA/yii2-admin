@@ -66,6 +66,7 @@ class AuthItem extends Model
             }],
             [['type'], 'integer'],
             [['description', 'data', 'ruleName'], 'default'],
+            ['data', 'isJson'],
             [['name'], 'string', 'max' => 64],
         ];
     }
@@ -84,6 +85,38 @@ class AuthItem extends Model
                 'value' => $value,
             ];
             $this->addError('name', Yii::$app->getI18n()->format($message, $params, Yii::$app->language));
+        }
+    }
+
+    /**
+     * @param $attribute
+     * @param $params
+     */
+    public function isJson($attribute, $params)
+    {
+        json_decode($this->$attribute, true);
+
+        switch (json_last_error()) {
+            case JSON_ERROR_NONE:
+                break;
+            case JSON_ERROR_DEPTH:
+                $this->addError($attribute, 'The maximum stack depth has been exceeded.');
+                break;
+            case JSON_ERROR_CTRL_CHAR:
+                $this->addError($attribute, 'Control character error, possibly incorrectly encoded.');
+                break;
+            case JSON_ERROR_SYNTAX:
+                $this->addError($attribute, 'Syntax error.');
+                break;
+            case JSON_ERROR_STATE_MISMATCH:
+                $this->addError($attribute, 'Invalid or malformed JSON.');
+                break;
+            case JSON_ERROR_UTF8:
+                $this->addError($attribute, 'Malformed UTF-8 characters, possibly incorrectly encoded.');
+                break;
+            default:
+                $this->addError($attribute, 'Unknown JSON decoding error.');
+                break;
         }
     }
 
